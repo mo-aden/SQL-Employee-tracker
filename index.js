@@ -2,6 +2,8 @@
 const inquirer = require("inquirer");
 const fs = require("fs");
 const path = require("path");
+const db = require("./lib/dbConnection");
+const { query } = require("./lib/dbConnection");
 
 const init = function () {
   inquirer
@@ -17,20 +19,32 @@ const init = function () {
           "Add Role",
           "View All Employees",
           "Add an Employee",
-          "Exit the application",
           "Update an Employee Role",
+          "Exit the application",
         ],
       },
     ])
-    .then((response) => {
-      console.log(response);
+    .then(({ userOption }) => {
+      console.log(userOption);
 
-      response.userOption === "Exit the application" && Exit();
+      userOption === "View All Employees" && viewAllEmployees();
+      userOption === "Exit the application" && Exit();
     });
 };
 
+function viewAllEmployees() {
+  const query = `SELECT * FROM employee`;
+
+  db.query(query, (err, results) => {
+    if (err) {
+      throw err;
+    }
+    console.table(results);
+    init();
+  });
+}
+
 function Exit() {
-  console.log(`Application closed`);
   process.exit();
 }
 
