@@ -9,23 +9,30 @@ const init = function () {
       {
         type: "list",
         name: "userOption",
-        message: "Select an action from the options below (use arrow keys)",
+        message: "Select one of the options below (use arrow keys)",
         choices: [
-          "View All Employees",
-          "Add an Employee",
-          "Update an Employee Role",
-          "View All Roles",
-          "Add Role",
           "View All Departments",
           "Add Department",
-          "Exit",
+          "View All Roles",
+          "Add Role",
+          "View All Employees",
+          "Add an Employee",
+          "Exit the application",
+          "Update an Employee Role",
         ],
       },
     ])
     .then((response) => {
       console.log(response);
+
+      response.userOption === "Exit the application" && Exit();
     });
 };
+
+function Exit() {
+  console.log(`Application closed`);
+  process.exit();
+}
 
 //initialize the starter questions
 init();
