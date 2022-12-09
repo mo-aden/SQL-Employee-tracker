@@ -4,6 +4,7 @@ const fs = require("fs");
 const path = require("path");
 const db = require("./lib/dbConnection");
 const { query } = require("./lib/dbConnection");
+const { validateHeaderName } = require("http");
 
 const init = function () {
   inquirer
@@ -91,6 +92,14 @@ LEFT JOIN department ON department.id = role.department_id;`;
 function addNewRole() {
   db.query("SELECT * FROM department", (err, results) => {
     if (err) throw err;
+    const choices = results.map((dept) => {
+      return {
+        name: dept.name,
+        value: dept.id,
+      };
+    });
+
+    // console.table(results);
 
     inquirer
       .prompt([
@@ -105,20 +114,19 @@ function addNewRole() {
           message: "What is the salary for the new role?",
         },
         {
-          type: "input",
-          name: "roleDepartment",
+          type: "list",
+          name: "deptID",
           message: "What department does the new role belong?",
+          choices,
         },
       ])
-      .then(({ newRole, roleSalary, roleDepartment }) => {
-        const deptID = results.find((department) => department.name === roleDepartment);
-        console.log(deptID);
-
+      .then(({ newRole, roleSalary, deptID }) => {
         const query = `INSERT INTO role(title, salary, department_id) VALUES("${newRole}", ${roleSalary}, ${deptID})`;
 
-        db.query(query, (err, results) => {
-          // console.table(results);
-          init();
+        db.query(query, (err2, results2) => {
+          if (err2) throw err2;
+          // console.table(results2);
+          viewAllRoles();
         });
       });
   });
@@ -137,28 +145,55 @@ function viewAllEmployees() {
 }
 
 function addNewEmployee() {
-  inquirer.prompt([
-    {
-      type: "input",
-      name: "firstName",
-      message: "What's the first name of the new employee?",
-    },
-    {
-      type: "input",
-      name: "lastName",
-      message: "What's the last name of the new employee?",
-    },
-    {
-      type: "input",
-      name: "roleID",
-      message: "What's the role id of the new employee?",
-    },
-    {
-      type: "input",
-      name: "managerID",
-      message: "What's the id of the manager of the new employee?",
-    },
-  ]);
+  db.query(`SELECT id, title FROM role`, (roleErr, roleResult) => {
+    if (roleErr) throw roleErr;
+    const roleChoices = roleResult.map((role) => {
+      return {
+        name: role.title,
+        value: role.id,
+      };
+    });
+
+    //manager Query
+    db.query(`SELECT id, CONCAT(first_name, " ", last_name) AS name FROM employee WHERE manager_id IS NULL;`, (managerErr, managerResult) => {
+      if (managerErr) throw managerErr;
+      const managerChoices = managerResult.map((manager) => {
+        return {
+          name: manager.name,
+          value: manager.id,
+        };
+      });
+      managerChoices.push({ name: "no manager", value: null });
+      inquirer
+        .prompt([
+          {
+            type: "input",
+            name: "firstName",
+            message: "What's the first name of the new employee?",
+          },
+          {
+            type: "input",
+            name: "lastName",
+            message: "What's the last name of the new employee?",
+          },
+          {
+            type: "list",
+            name: "roleID",
+            message: "What's the role of the new employee?",
+            choices: roleChoices,
+          },
+          {
+            type: "list",
+            name: "managerID",
+            message: "Who is the manager of the new employee?",
+            choices: managerChoices,
+          },
+        ])
+        .then(({ firstName, lastName, roleID, managerID }) => {
+          console.log(firstName, lastName, roleID, managerID);
+        });
+    });
+  });
 }
 
 function Exit() {
