@@ -16,7 +16,7 @@ const init = function () {
           "View All Departments",
           "Add Department",
           "View All Roles",
-          "Add Role",
+          "Add New Role",
           "View All Employees",
           "Add an Employee",
           "Update an Employee Role",
@@ -25,9 +25,10 @@ const init = function () {
       },
     ])
     .then(({ userOption }) => {
-      console.log(userOption);
       userOption === "View All Departments" && viewAllDepartments();
       userOption === "Add Department" && addNewDepartment();
+      userOption === "View All Roles" && viewAllRoles();
+      userOption === "Add New Role" && addNewRole();
       userOption === "View All Employees" && viewAllEmployees();
       userOption === "Exit the application" && Exit();
     });
@@ -71,6 +72,56 @@ function addNewDepartment() {
 }
 
 //Displays all the roles
+function viewAllRoles() {
+  // const query = `SELECT * FROM role`;
+  const query = `SELECT role.id, role.title, role.salary, department.name AS 'department_name' FROM role 
+LEFT JOIN department ON department.id = role.department_id;`;
+
+  db.query(query, (err, results) => {
+    if (err) {
+      throw err;
+    }
+    console.table(results);
+    init();
+  });
+}
+
+//Adds new Roles
+function addNewRole() {
+  db.query("SELECT * FROM department", (err, results) => {
+    if (err) throw err;
+
+    inquirer
+      .prompt([
+        {
+          type: "input",
+          name: "newRole",
+          message: "What new role would you like to add?",
+        },
+        {
+          type: "input",
+          name: "roleSalary",
+          message: "What is the salary for the new role?",
+        },
+        {
+          type: "input",
+          name: "roleDepartment",
+          message: "What department does the new role belong?",
+        },
+      ])
+      .then(({ newRole, roleSalary, roleDepartment }) => {
+        const deptID = results.find((department) => department.name === roleDepartment);
+        console.log(deptID);
+
+        const query = `INSERT INTO role(title, salary, department_id) VALUES("${newRole}", ${roleSalary}, ${deptID})`;
+
+        db.query(query, (err, results) => {
+          // console.table(results);
+          init();
+        });
+      });
+  });
+}
 
 function viewAllEmployees() {
   const query = `SELECT * FROM employee`;
