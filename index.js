@@ -18,7 +18,7 @@ const init = function () {
           "View All Roles",
           "Add New Role",
           "View All Employees",
-          "Add an Employee",
+          "Add New Employee",
           "Update an Employee Role",
           "Exit the application",
         ],
@@ -30,6 +30,7 @@ const init = function () {
       userOption === "View All Roles" && viewAllRoles();
       userOption === "Add New Role" && addNewRole();
       userOption === "View All Employees" && viewAllEmployees();
+      userOption === "Add New Employee" && addNewEmployee();
       userOption === "Exit the application" && Exit();
     });
 };
@@ -133,6 +134,31 @@ function viewAllEmployees() {
     console.table(results);
     init();
   });
+}
+
+function addNewEmployee() {
+  inquirer.prompt([
+    {
+      type: "input",
+      name: "firstName",
+      message: "What's the first name of the new employee?",
+    },
+    {
+      type: "input",
+      name: "lastName",
+      message: "What's the last name of the new employee?",
+    },
+    {
+      type: "input",
+      name: "roleID",
+      message: "What's the role id of the new employee?",
+    },
+    {
+      type: "input",
+      name: "managerID",
+      message: "What's the id of the manager of the new employee?",
+    },
+  ]);
 }
 
 function Exit() {
