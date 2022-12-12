@@ -33,7 +33,7 @@ const init = function () {
       userOption == "View All Employees" && viewAllEmployees();
       userOption == "Add New Employee" && addNewEmployee();
       userOption == "Exit the application" && Exit();
-      userOption == "Update Employee Role " && updateEmployeRole();
+      userOption == "Update Employee Role" && updateEmployeRole();
     });
 };
 
@@ -211,30 +211,61 @@ function addNewEmployee() {
 
 //update existing employee Role
 function updateEmployeRole() {
-  console.log(`fUNCT CALLED !`);
-  db.query(`SELECT id FROM role`, (req, roleResults) => {
-    console.log(res);
-    const updateChoices = roleResults.map((role) => role.id);
+  db.query(`SELECT id, title FROM role`, (req, roleResults) => {
+    const updateChoices = roleResults.map((role) => {
+      return {
+        name: role.title,
+        value: role.id,
+      };
+    });
+    console.log(updateChoices);
 
-    db.query(`SELECT CONCAT(first_name, " ", last_name) AS name FROM employee`, (req, empResults) => {
-      const employeName = empResults.map((empName) => empName.name);
+    db.query(`SELECT first_name, last_name FROM employee`, (req, empResults) => {
+      const employeName = empResults.map((empName) => `${empName.first_name} ${empName.last_name}`);
 
       inquirer
         .prompt([
           {
-            type: "input",
+            type: "list",
             name: "employee_name",
-            message: "What the name of the employee to update",
+            message: "What the name of the employee who's getting role change?",
             choices: employeName,
           },
         ])
         .then(({ employee_name }) => {
-          console.log(employee_name);
-          console.log(updateChoices, employeName);
+          inquirer
+            .prompt([
+              {
+                type: "list",
+                name: "newRole",
+                message: "What's the new role for the employee?",
+                choices: updateChoices.map((name) => name.name),
+              },
+            ])
+            .then(({ newRole }) => {
+              console.log(newRole);
+              var newRoleID = updateChoices.filter((choice) => {
+                return choice.name === newRole;
+              });
+
+              newRoleID = newRoleID[0].value;
+
+              console.log(newRoleID);
+
+              const query = `UPDATE EMPLOYEE SET role_id = ${newRoleID} WHERE first_name = ${empName.first_name} AND last_name = ${empName.last_name}`;
+
+              db.query(query, (err, results) => {
+                if (err) throw err;
+
+                // console.table(results);
+                // init();
+                viewAllEmployees();
+              });
+            });
         });
     });
   });
-  viewAllEmployees();
+  // viewAllEmployees();
 }
 
 function Exit() {
