@@ -20,19 +20,20 @@ const init = function () {
           "Add New Role",
           "View All Employees",
           "Add New Employee",
-          "Update an Employee Role",
+          "Update Employee Role",
           "Exit the application",
         ],
       },
     ])
     .then(({ userOption }) => {
-      userOption === "View All Departments" && viewAllDepartments();
-      userOption === "Add Department" && addNewDepartment();
-      userOption === "View All Roles" && viewAllRoles();
-      userOption === "Add New Role" && addNewRole();
-      userOption === "View All Employees" && viewAllEmployees();
-      userOption === "Add New Employee" && addNewEmployee();
-      userOption === "Exit the application" && Exit();
+      userOption == "View All Departments" && viewAllDepartments();
+      userOption == "Add Department" && addNewDepartment();
+      userOption == "View All Roles" && viewAllRoles();
+      userOption == "Add New Role" && addNewRole();
+      userOption == "View All Employees" && viewAllEmployees();
+      userOption == "Add New Employee" && addNewEmployee();
+      userOption == "Exit the application" && Exit();
+      userOption == "Update Employee Role " && updateEmployeRole();
     });
 };
 
@@ -163,7 +164,7 @@ function addNewEmployee() {
           value: manager.id,
         };
       });
-      managerChoices.push({ name: "no manager", value: null });
+      managerChoices.push({ name: "No Manager", value: null });
       inquirer
         .prompt([
           {
@@ -191,9 +192,49 @@ function addNewEmployee() {
         ])
         .then(({ firstName, lastName, roleID, managerID }) => {
           console.log(firstName, lastName, roleID, managerID);
+
+          const query = `INSERT INTO employee(first_name,last_name,role_id, manager_id ) 
+           VALUES   
+           ("${firstName}", "${lastName}", ${roleID}, ${managerID ? managerID : "NULL"})`;
+
+          db.query(query, (err, results) => {
+            if (err) throw err;
+
+            // console.table(results);
+            // init();
+            viewAllEmployees();
+          });
         });
     });
   });
+}
+
+//update existing employee Role
+function updateEmployeRole() {
+  console.log(`fUNCT CALLED !`);
+  db.query(`SELECT id FROM role`, (req, roleResults) => {
+    console.log(res);
+    const updateChoices = roleResults.map((role) => role.id);
+
+    db.query(`SELECT CONCAT(first_name, " ", last_name) AS name FROM employee`, (req, empResults) => {
+      const employeName = empResults.map((empName) => empName.name);
+
+      inquirer
+        .prompt([
+          {
+            type: "input",
+            name: "employee_name",
+            message: "What the name of the employee to update",
+            choices: employeName,
+          },
+        ])
+        .then(({ employee_name }) => {
+          console.log(employee_name);
+          console.log(updateChoices, employeName);
+        });
+    });
+  });
+  viewAllEmployees();
 }
 
 function Exit() {
