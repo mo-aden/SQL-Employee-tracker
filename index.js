@@ -60,7 +60,7 @@ function addNewDepartment() {
       },
     ])
     .then(({ newDepartment }) => {
-      console.log(newDepartment);
+      // console.log(newDepartment);
 
       const query = `INSERT INTO department(name) VALUES ("${newDepartment}")`;
 
@@ -68,7 +68,7 @@ function addNewDepartment() {
         if (err) {
           throw err;
         }
-        console.table(results);
+        // console.table(results);
         init();
       });
     });
@@ -133,6 +133,7 @@ function addNewRole() {
   });
 }
 
+//Display all the emp table
 function viewAllEmployees() {
   const query = `SELECT * FROM employee`;
 
@@ -145,6 +146,7 @@ function viewAllEmployees() {
   });
 }
 
+//Add new emp to the em table
 function addNewEmployee() {
   db.query(`SELECT id, title FROM role`, (roleErr, roleResult) => {
     if (roleErr) throw roleErr;
@@ -212,13 +214,13 @@ function addNewEmployee() {
 //update existing employee Role
 function updateEmployeRole() {
   db.query(`SELECT id, title FROM role`, (req, roleResults) => {
-    const updateChoices = roleResults.map((role) => {
+    const newRoleChoices = roleResults.map((role) => {
       return {
         name: role.title,
         value: role.id,
       };
     });
-    console.log(updateChoices);
+    // console.log(updateChoices);
 
     db.query(`SELECT first_name, last_name FROM employee`, (req, empResults) => {
       const employeName = empResults.map((empName) => `${empName.first_name} ${empName.last_name}`);
@@ -239,26 +241,21 @@ function updateEmployeRole() {
                 type: "list",
                 name: "newRole",
                 message: "What's the new role for the employee?",
-                choices: updateChoices.map((name) => name.name),
+                choices: newRoleChoices.map((name) => name.name),
               },
             ])
             .then(({ newRole }) => {
-              console.log(newRole);
-              var newRoleID = updateChoices.filter((choice) => {
-                return choice.name === newRole;
-              });
+              //Loop through the arr and return the id of the new role
+              let newRoleID = newRoleChoices.filter((choice) => choice.name === newRole)[0].value;
 
-              newRoleID = newRoleID[0].value;
-
-              console.log(newRoleID);
-
-              const query = `UPDATE EMPLOYEE SET role_id = ${newRoleID} WHERE first_name = ${empName.first_name} AND last_name = ${empName.last_name}`;
+              //set the first & last name in quotes ""
+              const query = `UPDATE EMPLOYEE SET role_id = ${newRoleID} WHERE first_name = "${employee_name.split(" ")[0]}" AND last_name = "${
+                employee_name.split(" ")[1]
+              }"`;
 
               db.query(query, (err, results) => {
                 if (err) throw err;
 
-                // console.table(results);
-                // init();
                 viewAllEmployees();
               });
             });
